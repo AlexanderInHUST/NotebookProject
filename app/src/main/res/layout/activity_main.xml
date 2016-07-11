@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFF0">
+
+    <RelativeLayout
+        android:id="@+id/main_activity_title_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#F0A986">
+
+        <TextSwitcher
+            android:id="@+id/main_activity_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_centerHorizontal="true">
+        </TextSwitcher>
+
+        <TextView
+            android:id="@+id/main_activity_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/main_activity_edit_button"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:padding="10dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"/>
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/main_activity_contents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFF0"
+        android:layout_below="@id/main_activity_title_layout">
+
+    </ListView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#F0A986"
+        android:layout_alignParentBottom="true">
+
+        <ImageSwitcher
+            android:id="@+id/main_activity_cloud_button"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="fitCenter"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/main_activity_count_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="0 note"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:padding="11dp" />
+
+        <ImageView
+            android:id="@+id/main_activity_add_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:src="@drawable/new_button"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

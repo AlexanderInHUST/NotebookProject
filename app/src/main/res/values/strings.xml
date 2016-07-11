@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">NotebookProject</string>
+
+    <string name="main_activity_label">Notebook</string>
+    <string name="main_activity_label_loading">Loading</string>
+    <string name="main_activity_edit_button">Edit</string>
+
+
+</resources>
