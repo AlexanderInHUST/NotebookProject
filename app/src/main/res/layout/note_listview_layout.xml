@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:textColor="#43341B"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="20dp"/>
 
     <TextView
@@ -22,7 +22,7 @@
         android:layout_below="@id/note_list_view_title"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="20dp"
-        android:layout_marginBottom="15dp"/>
+        android:layout_marginBottom="10dp"/>
 
     <TextView
         android:id="@+id/note_list_view_des"
@@ -35,8 +35,7 @@
         android:layout_toRightOf="@id/note_list_view_date"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="15dp"
         android:ellipsize="end"/>
-
 
 </RelativeLayout>

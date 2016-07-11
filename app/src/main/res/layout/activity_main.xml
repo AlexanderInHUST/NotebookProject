@@ -18,13 +18,10 @@
             android:layout_centerHorizontal="true">
         </TextSwitcher>
 
-        <TextView
+        <TextSwitcher
             android:id="@+id/main_activity_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/main_activity_edit_button"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
             android:padding="10dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"/>

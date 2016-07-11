@@ -12,7 +12,7 @@ import java.util.Locale;
  */
 public class Note {
 
-    private static final int MAX_OF_DES = 20;
+    private static final int MAX_OF_DES = 80;
 
     private String title;
     private int year;

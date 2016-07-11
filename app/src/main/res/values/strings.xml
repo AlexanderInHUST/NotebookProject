@@ -4,6 +4,8 @@
     <string name="main_activity_label">Notebook</string>
     <string name="main_activity_label_loading">Loading</string>
     <string name="main_activity_edit_button">Edit</string>
+    <string name="main_activity_cancel_button">Cancel</string>
+    <string name="main_activity_delete_button">Delete</string>
 
 
 </resources>
