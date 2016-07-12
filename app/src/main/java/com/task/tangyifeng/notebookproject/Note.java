@@ -1,10 +1,14 @@
 package com.task.tangyifeng.notebookproject;
 
+import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -21,19 +25,32 @@ public class Note {
     private String description;
     private String content;
     private Calendar time;
+    private String[] pictures;
 
-    public Note(String title, String content){
-        this.title = title;
+    public Note(String content){
         this.content = content;
         time = Calendar.getInstance();
         year = time.get(Calendar.YEAR);
         month = time.get(Calendar.MONTH);
         day = time.get(Calendar.DAY_OF_MONTH);
         setDescription();
+        setTitle();
+    }
+
+    public Note(String content, String[] pictures){
+        this(content);
+        this.pictures = pictures;
     }
 
     public String getTitle(){
         return title;
+    }
+
+    public void setTime(String time){
+        String[] s = time.split("/");
+        day = Integer.parseInt(s[0]);
+        month = Integer.parseInt(s[1]);
+        year = Integer.parseInt(s[2]);
     }
 
     public String getTime(){
@@ -48,6 +65,10 @@ public class Note {
         return content;
     }
 
+    public String[] getPictures(){
+        return pictures;
+    }
+
     private void setDescription(){
         if(TextUtils.isEmpty(content))
             description = null;
@@ -57,6 +78,18 @@ public class Note {
                 builder.append(content.charAt(i));
             }
             description = builder.toString();
+        }
+    }
+
+    private void setTitle(){
+        StringBuilder builder = new StringBuilder();
+        if(TextUtils.isEmpty(content))
+            title = "(无内容)";
+        else {
+            for (int i = 0; i < 10 && (content.charAt(i) != '\n'); i++) {
+                builder.append(content.charAt(i));
+            }
+            title = builder.toString();
         }
     }
 

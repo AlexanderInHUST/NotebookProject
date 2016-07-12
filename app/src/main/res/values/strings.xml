@@ -1,11 +1,15 @@
 <resources>
     <string name="app_name">NotebookProject</string>
 
-    <string name="main_activity_label">Notebook</string>
-    <string name="main_activity_label_loading">Loading</string>
-    <string name="main_activity_edit_button">Edit</string>
-    <string name="main_activity_cancel_button">Cancel</string>
-    <string name="main_activity_delete_button">Delete</string>
+    <string name="main_activity_label">备忘录</string>
+    <string name="main_activity_label_loading">加载中</string>
+    <string name="main_activity_edit_button">编辑</string>
+    <string name="main_activity_cancel_button">取消</string>
+    <string name="main_activity_delete_button">删除</string>
+
+    <string name="edit_activity_back_button">后退</string>
+    <string name="edit_activity_add_picture_button">添加图片</string>
+    <string name="edit_activity_done">完成</string>
 
 
 </resources>

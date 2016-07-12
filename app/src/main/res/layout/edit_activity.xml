@@ -1,9 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/content">
 
+    <RelativeLayout
+        android:id="@+id/edit_activity_label_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#F0A986">
 
+        <RelativeLayout
+            android:id="@+id/edit_activity_back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-</LinearLayout>
+            <ImageView
+                android:id="@+id/back_button_image_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/back_button"
+                android:layout_centerVertical="true"
+                android:scaleY="0.6"
+                android:scaleX="0.6"
+                android:padding="11dp"/>
+
+            <TextView
+                android:id="@+id/back_button_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit_activity_back_button"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/back_button_image_view"/>
+
+        </RelativeLayout>
+
+        <TextSwitcher
+            android:id="@+id/edit_activity_add_picture_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"/>
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:layout_below="@+id/edit_activity_label_layout">
+
+        <RelativeLayout
+            android:id="@+id/edit_activity_edit_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <EditText
+                android:id="@+id/edit_activity_note_edit"
+                android:background="@null"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="竞赛指南 中英文 或一本\n工作和balabala"
+                android:textSize="15sp"
+                android:textColor="@color/des"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp" />
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

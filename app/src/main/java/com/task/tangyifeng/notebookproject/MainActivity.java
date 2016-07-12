@@ -1,6 +1,7 @@
 package com.task.tangyifeng.notebookproject;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends Activity {
@@ -47,6 +49,7 @@ public class MainActivity extends Activity {
     private TextSwitcher edit;
     private ImageSwitcher cloudButton;
     private ListView notesListView;
+    private ImageView addNew;
 
     private List<Note> notes;
     private List<Map<String, Object>> dataList;
@@ -85,6 +88,29 @@ public class MainActivity extends Activity {
         initialCloudButton();
         initialNotes();
         initialEdit();
+        initialAddNew();
+        showCount();
+    }
+
+    //Add new's job
+    private void initialAddNew(){
+        addNew = (ImageView)findViewById(R.id.main_activity_add_button);
+        addNew.setOnClickListener(addNewListener);
+    }
+
+    private View.OnClickListener addNewListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Intent addNew = new Intent(MainActivity.this, EditActivity.class);
+            startActivity(addNew);
+            overridePendingTransition(R.anim.from_right, R.anim.to_left);
+        }
+    };
+
+    //Count's jobs
+    private void showCount(){
+        TextView count = (TextView)findViewById(R.id.main_activity_count_text);
+        count.setText(String.format(Locale.CHINA, "%d个备忘录", dataList.size()));
     }
 
     //Edit's jobs
@@ -107,14 +133,15 @@ public class MainActivity extends Activity {
 
     private void initialEdit(){
         edit = (TextSwitcher)findViewById(R.id.main_activity_edit);
-        edit.setInAnimation(this,android.R.anim.fade_in);
-        edit.setOutAnimation(this,android.R.anim.fade_out);
+        edit.setInAnimation(MainActivity.this, android.R.anim.fade_in);
+        edit.setOutAnimation(MainActivity.this, android.R.anim.fade_out);
         edit.setFactory(new ViewSwitcher.ViewFactory() {
             @Override
             public View makeView() {
                 TextView editTextView = new TextView(MainActivity.this);
                 editTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
                 editTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+                editTextView.setGravity(Gravity.CENTER_VERTICAL);
                 editTextView.setTextColor(Color.parseColor("#FFFFFF"));
                 editTextView.setText(getString(R.string.main_activity_edit_button));
                 return editTextView;
@@ -123,6 +150,7 @@ public class MainActivity extends Activity {
         edit.setOnClickListener(editListener);
     }
 
+    //now cancel
     private View.OnClickListener editListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -130,30 +158,39 @@ public class MainActivity extends Activity {
             showEdit();
             notesListView.setOnItemClickListener(listViewListener);
             edit.setOnClickListener(editingListener);
-            //
-            //
-            //
+
         }
     };
 
+    //now edit
     private View.OnClickListener editingListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             isEditing = NOT_EDIT;
             showEdit();
-            notesListView.setOnItemClickListener(null);
+            notesListView.setOnItemClickListener(editNoteListener);
             edit.setOnClickListener(editListener);
-            //
-            //
-            //
         }
     };
 
+    //now delete
     private View.OnClickListener clickedListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            for(Integer item : clicked){
+                dataList.remove(dataList.get(item));
+                notes.remove(notes.get(item));
+            }
+            clicked.clear();
+            isEditing = NOT_EDIT;
+            showEdit();
+            notesListView.setOnItemClickListener(editNoteListener);
+            edit.setOnClickListener(editListener);
+            edit.setBackgroundColor(Color.parseColor("#F0A986"));
+            notesListView.setAdapter(notesAdapter);
             //
-            //
+            //// // FIXME: 16/7/12
+            //update all data
             //
         }
     };
@@ -170,6 +207,7 @@ public class MainActivity extends Activity {
                 new String[]{"title","date","des"},
                 new int[]{R.id.note_list_view_title, R.id.note_list_view_date, R.id.note_list_view_des});
         notesListView.setAdapter(notesAdapter);
+        notesListView.setOnItemClickListener(editNoteListener);
     }
 
     private void setNotes(){
@@ -177,8 +215,15 @@ public class MainActivity extends Activity {
         //get notes from somewhere
         //
         notes = new ArrayList<Note>();
-        notes.add(new Note("asdb","grihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylyuykyuiuyl"));
-        notes.add(new Note("fhgrhtyrj","boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
+        notes.add(new Note("grihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylyuykyuiuyl"));
+        //
+        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
+        //
+        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
+        //
+        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
+        //
+        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
         //
         //
 
@@ -189,6 +234,9 @@ public class MainActivity extends Activity {
             item.put("des", n.getDescription());
             dataList.add(item);
         }
+        //
+        //
+        //
     }
 
     private AdapterView.OnItemClickListener listViewListener = new AdapterView.OnItemClickListener() {
@@ -200,10 +248,8 @@ public class MainActivity extends Activity {
                 isEditing = CLICKED;
                 showEdit();
                 edit.setOnClickListener(clickedListener);
+                edit.setBackgroundColor(Color.parseColor("#6A4028"));
                 clicked.add(Integer.valueOf(i));
-                //
-                //do something more
-                //
             }else{
                 itemView.setBackgroundColor(Color.parseColor("#FFFFF0"));
                 clicked.remove(Integer.valueOf(i));
@@ -211,11 +257,21 @@ public class MainActivity extends Activity {
                     isEditing = EDITING;
                     showEdit();
                     edit.setOnClickListener(editingListener);
+                    edit.setBackgroundColor(Color.parseColor("#F0A986"));
                 }
-                //
-                //do something more
-                //
             }
+        }
+    };
+
+    private AdapterView.OnItemClickListener editNoteListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            Intent editIntent = new Intent(MainActivity.this, EditActivity.class);
+            editIntent.putExtra("time",notes.get(i).getTime());
+            editIntent.putExtra("content",notes.get(i).getContent());
+            editIntent.putExtra("pictures",notes.get(i).getPictures());
+            startActivityForResult(editIntent, i);
+            overridePendingTransition(R.anim.from_right, R.anim.to_left);
         }
     };
 

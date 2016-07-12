@@ -3,4 +3,11 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="label">#F0A986</color>
+    <color name="content">#FFFFF0</color>
+    <color name="title">#43341B</color>
+    <color name="date">#78552B</color>
+    <color name="des">#967249</color>
+    <color name="clickedItem">#FFFACD</color>
+    <color name="white">#FFFFFF</color>
 </resources>
