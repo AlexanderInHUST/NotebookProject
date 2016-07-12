@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.MenuView;
@@ -36,7 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements CallBack {
 
     private static final int NOT_LOAD = 0;
     private static final int LOADING = 1;
@@ -44,6 +46,8 @@ public class MainActivity extends Activity {
     private static final int NOT_EDIT = 0;
     private static final int EDITING = 1;
     private static final int CLICKED = 2;
+    private static final int MSG_LOADING = 0;
+    private static final int MSG_LOADED = 1;
 
     private TextSwitcher mainActivityLabel;
     private TextSwitcher edit;
@@ -56,8 +60,27 @@ public class MainActivity extends Activity {
     private SimpleAdapter notesAdapter;
     private int isLoading = NOT_LOAD;
     private int isEditing = NOT_EDIT;
+    private Handler loadHandler = new Handler(){
 
-    int test = 0;
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case MSG_LOADING:{
+                    isLoading = LOADING;
+                    showLabel();
+                    showCloudButton();
+                    break;
+                }
+                case MSG_LOADED:{
+                    isLoading = LOADED;
+                    showLabel();
+                    showCloudButton();
+                    break;
+                }
+            }
+        }
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +89,9 @@ public class MainActivity extends Activity {
 
         initialViews();
 
-        //something to do with edit button
-
-
-        /*AVObject testObject = new AVObject("TestObject");
-        //testObject.put("words","Hello World!");
+        ArrayList<String> keys = new ArrayList<String>();
+        AVObject testObject = new AVObject("AllKeys");
+        testObject.add("keys",keys);
         testObject.saveInBackground(new SaveCallback() {
             @Override
             public void done(AVException e) {
@@ -78,8 +99,22 @@ public class MainActivity extends Activity {
                     Log.d("saved","success!");
                 }
             }
-        });*/
+        });
 
+    }
+
+    @Override
+    public void sendLoadedMsg(){
+        Message msg = new Message();
+        msg.what = LOADED;
+        loadHandler.sendMessage(msg);
+    }
+
+    @Override
+    public void sendLoadingMsg(){
+        Message msg = new Message();
+        msg.what = LOADING;
+        loadHandler.sendMessage(msg);
     }
 
     //initial all views
