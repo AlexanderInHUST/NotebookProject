@@ -29,16 +29,8 @@
 
     </RelativeLayout>
 
-    <ListView
-        android:id="@+id/main_activity_contents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/content"
-        android:layout_below="@id/main_activity_title_layout">
-
-    </ListView>
-
     <RelativeLayout
+        android:id="@+id/main_activity_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/label"
@@ -71,5 +63,17 @@
             android:src="@drawable/new_button"/>
 
     </RelativeLayout>
+
+    <ListView
+        android:id="@+id/main_activity_contents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/content"
+        android:layout_below="@id/main_activity_title_layout"
+        android:layout_above="@+id/main_activity_bottom">
+
+    </ListView>
+
+
 
 </RelativeLayout>

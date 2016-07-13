@@ -1,14 +1,18 @@
 package com.task.tangyifeng.notebookproject;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -48,6 +52,12 @@ public class EditActivity extends Activity {
     private String content;
     private String[] pictures;
     private String localTime;
+    private String key;
+    private UploadService service;
+    private UploadService.upLoadBinder binder;
+    private ServiceConnection connection;
+    private Intent backIntent;
+    private Intent addIntent;
 
     private int isEditing = NOT_EDIT;
     private int isNew = NOT_NEW;
@@ -65,7 +75,7 @@ public class EditActivity extends Activity {
         if(requestId == RESULT_OK){
             ContentResolver resolver = getContentResolver();
             Uri imageUri = data.getData();
-            //// FIXME: 16/7/12 
+            //// FIXME: 16/7/12
         }
     }
 
@@ -84,7 +94,24 @@ public class EditActivity extends Activity {
     //// FIXME: 16/7/12 
     //
     //
-    
+
+    ////
+    private void initialService(){
+        connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                binder = (UploadService.upLoadBinder) iBinder;
+                service = (UploadService) binder.getService();
+                service.setReadyToUpload(note);
+            }
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                Log.d("asd","damn");
+            }
+        };
+        bindService(addIntent, connection, Context.BIND_AUTO_CREATE);
+    }
+
     //Back button's jobs
     private void initialBackButton(){
         backButton = (RelativeLayout)findViewById(R.id.edit_activity_back_button);
@@ -95,11 +122,12 @@ public class EditActivity extends Activity {
         @Override
         public void onClick(View view) {
             getNote();
-            Intent backIntent = new Intent(EditActivity.this, MainActivity.class);
-            backIntent.putExtra("content", note.getContent());
-            backIntent.putExtra("pictures",note.getPictures());
-            backIntent.putExtra("time",note.getTime());
+            backIntent = new Intent(EditActivity.this, MainActivity.class);
+            addIntent = new Intent(EditActivity.this, UploadService.class);
+            initialService();
+            backIntent.putExtra("Edit","I'm from edit page");
             startActivity(backIntent);
+            startService(addIntent);
             overridePendingTransition(R.anim.from_left, R.anim.to_right);
         }
     };
@@ -183,6 +211,7 @@ public class EditActivity extends Activity {
         localTime = sender.getStringExtra("time");
         content = sender.getStringExtra("content");
         pictures = sender.getStringArrayExtra("pictures");
+        key = sender.getStringExtra("key");
         if(TextUtils.isEmpty(content)) {
             isNew = NEW;
             isEditing = EDITING;
@@ -191,7 +220,7 @@ public class EditActivity extends Activity {
 
     private void getNote(){
         content = editText.getText().toString();
-        note = new Note(content, pictures);
+        note = new Note(content, key, pictures);
         if(!TextUtils.isEmpty(localTime)){
             note.setTime(localTime);
         }

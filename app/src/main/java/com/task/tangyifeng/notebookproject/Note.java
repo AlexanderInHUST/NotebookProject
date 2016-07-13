@@ -24,11 +24,13 @@ public class Note {
     private int day;
     private String description;
     private String content;
+    private String key;
     private Calendar time;
     private String[] pictures;
 
-    public Note(String content){
+    public Note(String content, String key){
         this.content = content;
+        this.key = key;
         time = Calendar.getInstance();
         year = time.get(Calendar.YEAR);
         month = time.get(Calendar.MONTH);
@@ -37,8 +39,8 @@ public class Note {
         setTitle();
     }
 
-    public Note(String content, String[] pictures){
-        this(content);
+    public Note(String content,String key, String[] pictures){
+        this(content, key);
         this.pictures = pictures;
     }
 
@@ -53,6 +55,10 @@ public class Note {
         year = Integer.parseInt(s[2]);
     }
 
+    public void setKey(String key){
+        this.key = key;
+    }
+
     public String getTime(){
         return String.format(Locale.CHINA,"%d/%d/%d",year,month,day);
     }
@@ -63,6 +69,10 @@ public class Note {
 
     public String getContent(){
         return content;
+    }
+
+    public String getKey(){
+        return key;
     }
 
     public String[] getPictures(){
@@ -86,7 +96,7 @@ public class Note {
         if(TextUtils.isEmpty(content))
             title = "(无内容)";
         else {
-            for (int i = 0; i < 10 && (content.charAt(i) != '\n'); i++) {
+            for (int i = 0; i < Math.min(10, content.length()) && (content.charAt(i) != '\n'); i++) {
                 builder.append(content.charAt(i));
             }
             title = builder.toString();

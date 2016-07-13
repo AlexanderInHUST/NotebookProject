@@ -1,15 +1,20 @@
 package com.task.tangyifeng.notebookproject;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.MenuView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -37,6 +42,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
+
+import dalvik.annotation.TestTarget;
 
 public class MainActivity extends Activity implements CallBack {
 
@@ -48,6 +57,7 @@ public class MainActivity extends Activity implements CallBack {
     private static final int CLICKED = 2;
     private static final int MSG_LOADING = 0;
     private static final int MSG_LOADED = 1;
+    private static final int MSG_FLASH = 2;
 
     private TextSwitcher mainActivityLabel;
     private TextSwitcher edit;
@@ -60,6 +70,12 @@ public class MainActivity extends Activity implements CallBack {
     private SimpleAdapter notesAdapter;
     private int isLoading = NOT_LOAD;
     private int isEditing = NOT_EDIT;
+
+    private Intent cloudIntent;
+    private AlarmManager startManager;
+    private CloudService cloudService;
+    private ServiceConnection cloudConnection;
+    private CloudService.msgBinder cloudBinder;
     private Handler loadHandler = new Handler(){
 
         @Override
@@ -69,12 +85,21 @@ public class MainActivity extends Activity implements CallBack {
                     isLoading = LOADING;
                     showLabel();
                     showCloudButton();
+                    Log.d("loading","what?");
                     break;
                 }
                 case MSG_LOADED:{
                     isLoading = LOADED;
                     showLabel();
                     showCloudButton();
+                    notesListView.setAdapter(notesAdapter);
+                    notesListView.setOnItemClickListener(editNoteListener);
+                    showCount();
+                    Log.d("loaded","set");
+                    break;
+                }
+                case MSG_FLASH:{
+                    initialNotes();
                     break;
                 }
             }
@@ -89,31 +114,21 @@ public class MainActivity extends Activity implements CallBack {
 
         initialViews();
 
-        ArrayList<String> keys = new ArrayList<String>();
-        AVObject testObject = new AVObject("AllKeys");
-        testObject.add("keys",keys);
-        testObject.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(AVException e) {
-                if(e == null){
-                    Log.d("saved","success!");
-                }
-            }
-        });
+        
 
     }
 
     @Override
     public void sendLoadedMsg(){
         Message msg = new Message();
-        msg.what = LOADED;
+        msg.what = MSG_LOADED;
         loadHandler.sendMessage(msg);
     }
 
     @Override
     public void sendLoadingMsg(){
         Message msg = new Message();
-        msg.what = LOADING;
+        msg.what = MSG_LOADING;
         loadHandler.sendMessage(msg);
     }
 
@@ -124,7 +139,6 @@ public class MainActivity extends Activity implements CallBack {
         initialNotes();
         initialEdit();
         initialAddNew();
-        showCount();
     }
 
     //Add new's job
@@ -139,6 +153,7 @@ public class MainActivity extends Activity implements CallBack {
             Intent addNew = new Intent(MainActivity.this, EditActivity.class);
             startActivity(addNew);
             overridePendingTransition(R.anim.from_right, R.anim.to_left);
+            finish();
         }
     };
 
@@ -225,7 +240,7 @@ public class MainActivity extends Activity implements CallBack {
             notesListView.setAdapter(notesAdapter);
             //
             //// // FIXME: 16/7/12
-            //update all data
+            //delete
             //
         }
     };
@@ -235,33 +250,14 @@ public class MainActivity extends Activity implements CallBack {
 
     private void initialNotes(){
         dataList = new ArrayList<Map<String, Object>>();
-        setNotes();
-        clicked = new ArrayList<Integer>();
         notesListView = (ListView)findViewById(R.id.main_activity_contents);
-        notesAdapter = new SimpleAdapter(this, dataList, R.layout.note_listview_layout,
-                new String[]{"title","date","des"},
-                new int[]{R.id.note_list_view_title, R.id.note_list_view_date, R.id.note_list_view_des});
-        notesListView.setAdapter(notesAdapter);
-        notesListView.setOnItemClickListener(editNoteListener);
+        notes = new ArrayList<Note>();
+        initialCloudService();
+        startService(cloudIntent);
     }
 
-    private void setNotes(){
-        //
-        //get notes from somewhere
-        //
-        notes = new ArrayList<Note>();
-        notes.add(new Note("grihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylyuykyuiuyl"));
-        //
-        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
-        //
-        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
-        //
-        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
-        //
-        notes.add(new Note("boriwjboiwmeklrnwkjgtrkjbhkjertgrihjeoirjhoieytmhklwrretewebgfnftdafregrthetrhertgerwfwergtyuykyuiuylhwrth"));
-        //
-        //
-
+    public void setNotes(ArrayList<Note> currentNotes){
+        notes = currentNotes;
         for(Note n: notes){
             Map<String, Object> item = new HashMap<String, Object>();
             item.put("title", n.getTitle());
@@ -269,9 +265,30 @@ public class MainActivity extends Activity implements CallBack {
             item.put("des", n.getDescription());
             dataList.add(item);
         }
-        //
-        //
-        //
+        while(dataList == null) ;
+        clicked = new ArrayList<Integer>();
+        notesAdapter = new SimpleAdapter(this, dataList, R.layout.note_listview_layout,
+                new String[]{"title","date","des"},
+                new int[]{R.id.note_list_view_title, R.id.note_list_view_date, R.id.note_list_view_des});
+        sendLoadedMsg();
+        unbindService(cloudConnection);
+    }
+
+    private void initialCloudService(){
+        cloudIntent = new Intent(MainActivity.this, CloudService.class);
+        cloudConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                cloudBinder = (CloudService.msgBinder) iBinder;
+                cloudService =(CloudService) cloudBinder.getService();
+                cloudService.setCallBack(MainActivity.this);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+            }
+        };
+        bindService(cloudIntent, cloudConnection, BIND_AUTO_CREATE);
     }
 
     private AdapterView.OnItemClickListener listViewListener = new AdapterView.OnItemClickListener() {
@@ -305,8 +322,10 @@ public class MainActivity extends Activity implements CallBack {
             editIntent.putExtra("time",notes.get(i).getTime());
             editIntent.putExtra("content",notes.get(i).getContent());
             editIntent.putExtra("pictures",notes.get(i).getPictures());
-            startActivityForResult(editIntent, i);
+            editIntent.putExtra("key",notes.get(i).getKey());
+            startActivity(editIntent);
             overridePendingTransition(R.anim.from_right, R.anim.to_left);
+            finish();
         }
     };
 
