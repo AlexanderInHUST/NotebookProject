@@ -2,6 +2,7 @@ package com.task.tangyifeng.notebookproject;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -68,14 +69,19 @@ public class MainActivity extends Activity implements CallBack {
     private List<Note> notes;
     private List<Map<String, Object>> dataList;
     private SimpleAdapter notesAdapter;
+    private ArrayList<Note> toDeleteNotes;
     private int isLoading = NOT_LOAD;
     private int isEditing = NOT_EDIT;
 
     private Intent cloudIntent;
+    private Intent deleteIntent;
     private AlarmManager startManager;
     private CloudService cloudService;
     private ServiceConnection cloudConnection;
     private CloudService.msgBinder cloudBinder;
+    private DeleteService deleteService;
+    private ServiceConnection deleteConnection;
+    private DeleteService.deleteBinder deleteBinder;
     private Handler loadHandler = new Handler(){
 
         @Override
@@ -227,7 +233,9 @@ public class MainActivity extends Activity implements CallBack {
     private View.OnClickListener clickedListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            toDeleteNotes = new ArrayList<>();
             for(Integer item : clicked){
+                toDeleteNotes.add(notes.get(item));
                 dataList.remove(dataList.get(item));
                 notes.remove(notes.get(item));
             }
@@ -238,12 +246,28 @@ public class MainActivity extends Activity implements CallBack {
             edit.setOnClickListener(editListener);
             edit.setBackgroundColor(Color.parseColor("#F0A986"));
             notesListView.setAdapter(notesAdapter);
-            //
-            //// // FIXME: 16/7/12
-            //delete
-            //
+            deleteIntent = new Intent(MainActivity.this, DeleteService.class);
+            deleteConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                    deleteBinder = (DeleteService.deleteBinder) iBinder;
+                    deleteService = (DeleteService) deleteBinder.getService();
+                    deleteService.setToDeleteNotes(toDeleteNotes);
+                    deleteService.setCallBack(MainActivity.this);
+                }
+                @Override
+                public void onServiceDisconnected(ComponentName componentName) {
+                }
+            };
+            bindService(deleteIntent, deleteConnection, BIND_AUTO_CREATE);
+            startService(deleteIntent);
         }
     };
+
+    @Override
+    public void unbindDelete(){
+        unbindService(deleteConnection);
+    }
 
     //Note's jobs
     private List<Integer> clicked;
@@ -385,6 +409,16 @@ public class MainActivity extends Activity implements CallBack {
                 return cloud;
             }
         });
+        cloudButton.setOnClickListener(cloudButtonListener);
     }
+
+    private View.OnClickListener cloudButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Message msg = new Message();
+            msg.what = MSG_FLASH;
+            loadHandler.sendMessage(msg);
+        }
+    };
 
 }

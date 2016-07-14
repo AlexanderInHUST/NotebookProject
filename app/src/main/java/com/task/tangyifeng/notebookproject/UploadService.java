@@ -109,9 +109,17 @@ public class UploadService extends Service {
             iniDone = true;
         }else{
             note = AVObject.createWithoutData("note",readyToUpload.getKey());
-            note.put("time",readyToUpload.getTime());
-            note.put("content",readyToUpload.getContent());
-            note.put("pictures",readyToUpload.getPictures());
+            ArrayList<String> uploadTime = new ArrayList<>();
+            ArrayList<String> uploadContent = new ArrayList<>();
+            ArrayList<String> uploadPictures = new ArrayList<>();
+            uploadTime.add(readyToUpload.getTime());
+            uploadContent.add(readyToUpload.getContent());
+            for(int i = 0; readyToUpload.getPictures() != null && i < readyToUpload.getPictures().length; i++){
+                uploadPictures.add(readyToUpload.getPictures()[i]);
+            }
+            note.put("time",uploadTime);
+            note.put("content",uploadContent);
+            note.put("pictures",uploadPictures);
             iniDone = true;
         }
     }
