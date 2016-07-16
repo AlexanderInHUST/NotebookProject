@@ -53,10 +53,11 @@
         android:fillViewport="true"
         android:layout_below="@+id/edit_activity_label_layout">
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/edit_activity_edit_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <EditText
                 android:id="@+id/edit_activity_note_edit"
@@ -71,7 +72,7 @@
                 android:layout_marginTop="15dp"
                 android:layout_marginBottom="15dp" />
 
-        </RelativeLayout>
+        </LinearLayout>
 
     </ScrollView>
 

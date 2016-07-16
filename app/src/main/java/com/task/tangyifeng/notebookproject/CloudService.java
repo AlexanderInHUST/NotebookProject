@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -27,7 +28,7 @@ public class CloudService extends Service {
     private ArrayList<Note> notes;
     private ArrayList<String> keys;
     private String key;
-    private boolean done = false;
+    private ServiceConnection connection;
 
     private AVQuery<AVObject> findKeys;
     private AVQuery<AVObject> findNotes;
@@ -68,7 +69,7 @@ public class CloudService extends Service {
 
     @Override
     public void onDestroy(){
-
+        super.onDestroy();
     }
 
     class msgBinder extends Binder{
@@ -84,17 +85,27 @@ public class CloudService extends Service {
         findNotes.getInBackground(key, new GetCallback<AVObject>() {
             @Override
             public void done(AVObject avObject, AVException e) {
+                ArrayList<String> pictures;
+                ArrayList<String> picName;
                 String time = ((ArrayList<String>) avObject.get("time")).get(0);
                 String content = ((ArrayList<String>) avObject.get("content")).get(0);
-                ArrayList<String> pictures = (ArrayList<String>) avObject.get("pictures");
-                String[] pic = (pictures == null ) ? null : new String[pictures.size()];
-                for(int i = 0; pic != null  && i < pic.length; i++){
-                    pic[i] = pictures.get(i);
+                if(((ArrayList<ArrayList<String>>) avObject.get("pictures")).get(0) != null) {
+                    pictures = ((ArrayList<ArrayList<String>>) avObject.get("pictures")).get(0);
+                    picName = ((ArrayList<ArrayList<String>>) avObject.get("picName")).get(0);
                 }
-                Note addingNote = new Note(content, key, pic);
+                else {
+                    pictures = new ArrayList<>();
+                    picName = new ArrayList<>();
+                }
+                String[] pic = (pictures == null ) ? null : new String[pictures.size()];
+                String[] picN = (picName == null) ? null : new String[picName.size()];
+                for(int i = 0; pic != null && picN != null  && i < pic.length; i++){
+                    pic[i] = pictures.get(i);
+                    picN[i] = picName.get(i);
+                }
+                Note addingNote = new Note(content, avObject.getObjectId(), pic, picN);
                 addingNote.setTime(time);
                 notes.add(addingNote);
-                Log.d("add", addingNote.toString());
             }
         });
     }
@@ -114,6 +125,10 @@ public class CloudService extends Service {
 
     public void setCallBack(CallBack callBack){
         this.callBack = callBack;
+    }
+
+    public void setConnection(ServiceConnection connection){
+        this.connection = connection;
     }
 
 }

@@ -2,19 +2,23 @@ package com.task.tangyifeng.notebookproject;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVFile;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.GetCallback;
 import com.avos.avoscloud.SaveCallback;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by tangyifeng on 16/7/12.
@@ -30,7 +34,7 @@ public class UploadService extends Service {
     private AVQuery<AVObject> findKeys;
     private ArrayList<String> keysList;
 
-    private boolean iniDone = false;
+    private boolean iniDoneNote = false;
 
     @Override
     public IBinder onBind(Intent intent){
@@ -48,10 +52,11 @@ public class UploadService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                initialNote();
-                while(iniDone == false)
+                while(readyToUpload == null)
                     ;
-                //uploading
+                initialNote();
+                while(iniDoneNote == false)
+                    ;
                 if(TextUtils.isEmpty(readyToUpload.getKey())) {
                     initialFindKeys();
                     note.saveInBackground(new SaveCallback() {
@@ -73,6 +78,8 @@ public class UploadService extends Service {
                     note.saveInBackground(new SaveCallback() {
                         @Override
                         public void done(AVException e) {
+                            if(e != null)
+                                e.printStackTrace();
                             Log.d("save",note.toString());
                             stopSelf();
                         }
@@ -99,28 +106,44 @@ public class UploadService extends Service {
     }
 
     private void initialNote(){
-        while(readyToUpload == null)
-            ;
         if(TextUtils.isEmpty(readyToUpload.getKey())) {
             note = new AVObject("note");
+            ArrayList<String> uploadPicName = new ArrayList<>();
+            ArrayList<String> uploadPictures = new ArrayList<>();
+            if(readyToUpload.getPicName() != null) {
+                for (String s : readyToUpload.getPicName())
+                    uploadPicName.add(s);
+                for(String s : readyToUpload.getPictures())
+                    uploadPictures.add(s);
+            }
             note.add("time", readyToUpload.getTime());
             note.add("content", readyToUpload.getContent());
-            note.add("pictures", readyToUpload.getPictures());
-            iniDone = true;
+            note.add("picName", uploadPicName);
+            note.add("pictures",uploadPictures);
+            iniDoneNote = true;
         }else{
             note = AVObject.createWithoutData("note",readyToUpload.getKey());
             ArrayList<String> uploadTime = new ArrayList<>();
             ArrayList<String> uploadContent = new ArrayList<>();
-            ArrayList<String> uploadPictures = new ArrayList<>();
+            ArrayList<String> pic = new ArrayList<>();
+            ArrayList<String> picN = new ArrayList<>();
+            ArrayList<ArrayList<String>> uploadPictures = new ArrayList<>();
+            ArrayList<ArrayList<String>> uploadPicName = new ArrayList<>();
             uploadTime.add(readyToUpload.getTime());
             uploadContent.add(readyToUpload.getContent());
-            for(int i = 0; readyToUpload.getPictures() != null && i < readyToUpload.getPictures().length; i++){
-                uploadPictures.add(readyToUpload.getPictures()[i]);
+            for(String s: readyToUpload.getPictures()){
+                pic.add(s);
             }
+            for(String s : readyToUpload.getPicName()){
+                picN.add(s);
+            }
+            uploadPicName.add(picN);
+            uploadPictures.add(pic);
             note.put("time",uploadTime);
             note.put("content",uploadContent);
             note.put("pictures",uploadPictures);
-            iniDone = true;
+            note.put("picName",uploadPicName);
+            iniDoneNote = true;
         }
     }
 

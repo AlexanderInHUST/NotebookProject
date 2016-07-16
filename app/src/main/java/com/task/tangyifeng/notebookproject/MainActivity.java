@@ -101,6 +101,7 @@ public class MainActivity extends Activity implements CallBack {
                     notesListView.setAdapter(notesAdapter);
                     notesListView.setOnItemClickListener(editNoteListener);
                     showCount();
+                    unbindService(cloudConnection);
                     Log.d("loaded","set");
                     break;
                 }
@@ -119,8 +120,6 @@ public class MainActivity extends Activity implements CallBack {
         setContentView(R.layout.activity_main);
 
         initialViews();
-
-        
 
     }
 
@@ -233,15 +232,18 @@ public class MainActivity extends Activity implements CallBack {
     private View.OnClickListener clickedListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            int deleteCount = 0;
             toDeleteNotes = new ArrayList<>();
             for(Integer item : clicked){
-                toDeleteNotes.add(notes.get(item));
-                dataList.remove(dataList.get(item));
-                notes.remove(notes.get(item));
+                toDeleteNotes.add(notes.get(item - deleteCount));
+                dataList.remove(dataList.get(item - deleteCount));
+                notes.remove(notes.get(item - deleteCount));
+                deleteCount++;
             }
             clicked.clear();
             isEditing = NOT_EDIT;
             showEdit();
+            showCount();
             notesListView.setOnItemClickListener(editNoteListener);
             edit.setOnClickListener(editListener);
             edit.setBackgroundColor(Color.parseColor("#F0A986"));
@@ -295,7 +297,7 @@ public class MainActivity extends Activity implements CallBack {
                 new String[]{"title","date","des"},
                 new int[]{R.id.note_list_view_title, R.id.note_list_view_date, R.id.note_list_view_des});
         sendLoadedMsg();
-        unbindService(cloudConnection);
+        Log.d("unbind","done");
     }
 
     private void initialCloudService(){
@@ -306,6 +308,7 @@ public class MainActivity extends Activity implements CallBack {
                 cloudBinder = (CloudService.msgBinder) iBinder;
                 cloudService =(CloudService) cloudBinder.getService();
                 cloudService.setCallBack(MainActivity.this);
+                cloudService.setConnection(cloudConnection);
             }
 
             @Override
@@ -347,6 +350,7 @@ public class MainActivity extends Activity implements CallBack {
             editIntent.putExtra("content",notes.get(i).getContent());
             editIntent.putExtra("pictures",notes.get(i).getPictures());
             editIntent.putExtra("key",notes.get(i).getKey());
+            editIntent.putExtra("picName",notes.get(i).getPicName());
             startActivity(editIntent);
             overridePendingTransition(R.anim.from_right, R.anim.to_left);
             finish();

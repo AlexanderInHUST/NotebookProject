@@ -27,6 +27,7 @@ public class Note {
     private String key;
     private Calendar time;
     private String[] pictures;
+    private String[] picName;
 
     public Note(String content, String key){
         this.content = content;
@@ -39,9 +40,10 @@ public class Note {
         setTitle();
     }
 
-    public Note(String content,String key, String[] pictures){
+    public Note(String content,String key, String[] pictures, String[] picName){
         this(content, key);
         this.pictures = pictures;
+        this.picName = picName;
     }
 
     public String getTitle(){
@@ -77,6 +79,10 @@ public class Note {
 
     public String[] getPictures(){
         return pictures;
+    }
+
+    public String[] getPicName(){
+        return picName;
     }
 
     private void setDescription(){

@@ -31,6 +31,10 @@
 
         <service android:name=".DeleteService"/>
 
+        <service android:name=".LoadPicService"/>
+
+        <service android:name=".UploadPicService"/>
+
     </application>
 
 </manifest>

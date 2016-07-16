@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 public class DeleteService extends Service {
 
-    private boolean deleteDone = false;
+    private ArrayList<Boolean> deleteDone;
     private CallBack callBack;
     private AVQuery<AVObject> findKeys;
     private AVObject keys;
@@ -45,6 +45,7 @@ public class DeleteService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                deleteDone = new ArrayList<Boolean>();
                 while(toDeleteNotes == null) ;
                 findKeys = new AVQuery<AVObject>("AllKeys");
                 findKeys.getInBackground(KEY_ID, new GetCallback<AVObject>() {
@@ -55,8 +56,8 @@ public class DeleteService extends Service {
                 });
                 while(keys == null) ;
                 newKeys = (ArrayList<String>) keys.get("keys");
-                Log.d("delete",""+ newKeys);
                 for(Note n: toDeleteNotes){
+                    deleteDone.add(new Boolean(false));
                     AVObject note = AVObject.createWithoutData("note", n.getKey());
                     note.deleteInBackground(new DeleteCallback() {
                         @Override
@@ -64,12 +65,12 @@ public class DeleteService extends Service {
                             if(e != null)
                                 e.printStackTrace();
                             Log.d("delete","delete done.");
-                            deleteDone = true;
+                            deleteDone.remove(0);
                         }
                     });
                     newKeys.remove(n.getKey());
                 }
-                while (!deleteDone) ;
+                while (!deleteDone.isEmpty()) ;
                 keys = AVObject.createWithoutData("AllKeys", KEY_ID);
                 keys.put("keys", newKeys);
                 keys.saveInBackground(new SaveCallback() {
