@@ -91,7 +91,7 @@ public class MainActivity extends Activity implements CallBack {
                     isLoading = LOADING;
                     showLabel();
                     showCloudButton();
-                    Log.d("loading","what?");
+                    Log.d("loading","setting");
                     break;
                 }
                 case MSG_LOADED:{
@@ -101,7 +101,6 @@ public class MainActivity extends Activity implements CallBack {
                     notesListView.setAdapter(notesAdapter);
                     notesListView.setOnItemClickListener(editNoteListener);
                     showCount();
-                    unbindService(cloudConnection);
                     Log.d("loaded","set");
                     break;
                 }
@@ -135,6 +134,11 @@ public class MainActivity extends Activity implements CallBack {
         Message msg = new Message();
         msg.what = MSG_LOADING;
         loadHandler.sendMessage(msg);
+    }
+
+    @Override
+    public void unbindCloud(){
+        unbindService(cloudConnection);
     }
 
     //initial all views

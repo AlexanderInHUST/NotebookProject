@@ -61,6 +61,7 @@ public class CloudService extends Service {
                 }
                 while(notes.size() != keys.size());
                 callBack.setNotes(notes);
+                callBack.unbindCloud();
                 stopSelf();
             }
         }).start();

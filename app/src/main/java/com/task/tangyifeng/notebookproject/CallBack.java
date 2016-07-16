@@ -11,5 +11,6 @@ public interface CallBack {
     public void sendLoadingMsg();
     public void setNotes(ArrayList<Note> currentNotes);
     public void unbindDelete();
+    public void unbindCloud();
 
 }

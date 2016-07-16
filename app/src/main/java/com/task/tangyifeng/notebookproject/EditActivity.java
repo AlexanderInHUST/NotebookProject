@@ -19,10 +19,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +36,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -44,7 +50,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -57,15 +68,21 @@ public class EditActivity extends Activity implements PicCallBack{
     private static final int NEW = 0;
     private static final int NOT_NEW = 1;
     private static final int MSG_SET_PIC = 0;
+    private static final int ID = 19970416;
 
     private EditText editText;
     private TextSwitcher addPicSwitcher;
     private RelativeLayout backButton;
     private LinearLayout editView;
     private ArrayList<Bitmap> bitmaps;
+    private ImageView toDeleteImage;
 
     private int count = 0;
+    private int pos = 0;
+    private int toDeleteId;
+    private ArrayList<Integer> hasDelete;
     private Note note;
+    private PopupMenu popupMenu;
     private String content;
     private String[] pictures;
     private String[] picName;
@@ -110,11 +127,6 @@ public class EditActivity extends Activity implements PicCallBack{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_activity);
         initialViews();
-
-        //
-        // FIXME: 16/7/14
-        bitmaps = new ArrayList<>();
-        //
     }
 
 
@@ -166,9 +178,12 @@ public class EditActivity extends Activity implements PicCallBack{
     }
     
     private void initialImage(){
+        bitmaps = new ArrayList<>();
+        hasDelete = new ArrayList<>();
         picIntent = new Intent(EditActivity.this, LoadPicService.class);
         initialLoadPicService();
         startService(picIntent);
+        Log.d("loadPic",""+picIntent);
     }
 
     private void initialLoadPicService(){
@@ -205,17 +220,70 @@ public class EditActivity extends Activity implements PicCallBack{
     }
 
     private void setImage(Bitmap resource){
-        ImageView addImage = new ImageView(EditActivity.this);
+        final ImageView addImage = new ImageView(EditActivity.this);
         editView = (LinearLayout)findViewById(R.id.edit_activity_edit_view);
         addImage.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
-        addImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        addImage.setScaleType(ImageView.ScaleType.FIT_XY);
         addImage.setPadding(transDpToPx(20),transDpToPx(15),transDpToPx(20), transDpToPx(15));
         addImage.setImageBitmap(resource);
+        addImage.setId(pos + ID);
+        pos++;
+        if(hasDelete.isEmpty())
+            hasDelete.add(0);
+        else
+            hasDelete.add(hasDelete.get(hasDelete.size() - 1));
+        addImage.setOnLongClickListener(deleteClickListener);
         editView.setGravity(Gravity.CENTER_HORIZONTAL);
         editView.addView(addImage);
+    }
+
+    private View.OnLongClickListener deleteClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View view) {
+            popupMenu = new PopupMenu(EditActivity.this, view);
+            toDeleteImage = (ImageView) view;
+            toDeleteId = toDeleteImage.getId();
+            getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    Log.d("menu","" + toDeleteImage + " " + (toDeleteId - ID));
+                    String[] tempPictures = new String[pictures.length - 1];
+                    String[] tempPicName = new String[picName.length - 1];
+                    System.arraycopy(toDeleteString(pictures, toDeleteId - ID - hasDelete.get(toDeleteId - ID)),0,tempPictures,0,tempPictures.length);
+                    System.arraycopy(toDeleteString(picName, toDeleteId - ID - hasDelete.get(toDeleteId - ID)),0,tempPicName,0,tempPicName.length);
+                    pictures = new String[pictures.length - 1];
+                    picName = new String[picName.length - 1];
+                    System.arraycopy(tempPictures,0,pictures,0,pictures.length);
+                    System.arraycopy(tempPicName,0,picName,0,picName.length);
+                    toDeleteImage.setVisibility(View.GONE);
+                    for(int i = toDeleteId - ID; i < hasDelete.size(); i++){
+                        hasDelete.set(i, hasDelete.get(i) + 1);
+                    }
+                    for(Integer i : hasDelete){
+                        Log.d("hasDelete","" + i);
+                    }
+                    return true;
+                }
+            });
+            popupMenu.show();
+            return true;
+        }
+    };
+
+    private String[] toDeleteString(String[] resource, int index){
+        LinkedList<String> temp = new LinkedList<>();
+        for(String s : resource)
+            temp.add(s);
+        temp.remove(index);
+        Iterator<String> it = temp.iterator();
+        String[] result = new String[temp.size()];
+        for(int i = 0 ; i < result.length; i++)
+            result[i] = it.next();
+        return result;
     }
 
     private int transDpToPx(int Dp){

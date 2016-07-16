@@ -60,6 +60,7 @@ public class LoadPicService extends Service {
                 pic = new File[picture.length];
                 innerIndex = 0;
                 for(index = 0; index < picture.length; index++) {
+                    Log.d("loadPic",""+index);
                     iniDone.add(new Boolean(false));
                     picFile = new AVFile(picName[index], picture[index], new HashMap<String, Object>());
                     picFile.getDataInBackground(new GetDataCallback() {
