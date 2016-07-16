@@ -28,7 +28,6 @@ public class CloudService extends Service {
     private ArrayList<Note> notes;
     private ArrayList<String> keys;
     private String key;
-    private ServiceConnection connection;
 
     private AVQuery<AVObject> findKeys;
     private AVQuery<AVObject> findNotes;
@@ -62,6 +61,7 @@ public class CloudService extends Service {
                 while(notes.size() != keys.size());
                 callBack.setNotes(notes);
                 callBack.unbindCloud();
+                callBack.sendLoadedMsg();
                 stopSelf();
             }
         }).start();
@@ -78,8 +78,6 @@ public class CloudService extends Service {
             return CloudService.this;
         }
     }
-
-    /////////////////////////////////////////
 
     private void addNote(){
         findNotes = new AVQuery<>("note");
@@ -128,8 +126,5 @@ public class CloudService extends Service {
         this.callBack = callBack;
     }
 
-    public void setConnection(ServiceConnection connection){
-        this.connection = connection;
-    }
 
 }

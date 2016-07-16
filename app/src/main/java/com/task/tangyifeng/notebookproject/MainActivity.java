@@ -39,6 +39,7 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -119,6 +120,20 @@ public class MainActivity extends Activity implements CallBack {
         setContentView(R.layout.activity_main);
 
         initialViews();
+
+        if(getIntent().getStringExtra("Edit") != null){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        TimeUnit.MILLISECONDS.sleep(2000);
+                        cloudButton.callOnClick();
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
 
     }
 
@@ -238,6 +253,8 @@ public class MainActivity extends Activity implements CallBack {
         public void onClick(View view) {
             int deleteCount = 0;
             toDeleteNotes = new ArrayList<>();
+            Log.d("clicked", ""+clicked);
+            Collections.sort(clicked);
             for(Integer item : clicked){
                 toDeleteNotes.add(notes.get(item - deleteCount));
                 dataList.remove(dataList.get(item - deleteCount));
@@ -300,7 +317,6 @@ public class MainActivity extends Activity implements CallBack {
         notesAdapter = new SimpleAdapter(this, dataList, R.layout.note_listview_layout,
                 new String[]{"title","date","des"},
                 new int[]{R.id.note_list_view_title, R.id.note_list_view_date, R.id.note_list_view_des});
-        sendLoadedMsg();
         Log.d("unbind","done");
     }
 
@@ -312,7 +328,6 @@ public class MainActivity extends Activity implements CallBack {
                 cloudBinder = (CloudService.msgBinder) iBinder;
                 cloudService =(CloudService) cloudBinder.getService();
                 cloudService.setCallBack(MainActivity.this);
-                cloudService.setConnection(cloudConnection);
             }
 
             @Override

@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVFile;
+import com.avos.avoscloud.ProgressCallback;
 import com.avos.avoscloud.SaveCallback;
 
 import java.io.IOException;
@@ -43,14 +44,20 @@ public class UploadPicService extends Service {
                 while(callBack == null || picName == null || name == null) ;
                 try {
                     pic = AVFile.withAbsoluteLocalPath(name, picName);
+                    callBack.startUploadProgress();
                     pic.saveInBackground(new SaveCallback() {
                         @Override
                         public void done(AVException e) {
-                            if(e != null)
+                            if (e != null)
                                 e.printStackTrace();
-                            Log.d("uploadPic","done" + pic.getUrl());
+                            Log.d("uploadPic", "done" + pic.getUrl());
                             callBack.setPicture(pic.getUrl());
                             stopSelf();
+                        }
+                    }, new ProgressCallback() {
+                        @Override
+                        public void done(Integer integer) {
+                            callBack.setUploadProgress(integer);
                         }
                     });
                 }catch (IOException e){

@@ -9,5 +9,7 @@ public interface PicCallBack {
 
     public void sendSetImage(Bitmap bitmap);
     public void setPicture(String picture);
+    public void startUploadProgress();
+    public void setUploadProgress(Integer progress);
 
 }

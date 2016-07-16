@@ -1,6 +1,7 @@
 package com.task.tangyifeng.notebookproject;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -57,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by tangyifeng on 16/7/12.
@@ -68,6 +70,8 @@ public class EditActivity extends Activity implements PicCallBack{
     private static final int NEW = 0;
     private static final int NOT_NEW = 1;
     private static final int MSG_SET_PIC = 0;
+    private static final int MSG_START_UPDATING = 1;
+    private static final int MSG_UPDATING = 2;
     private static final int ID = 19970416;
 
     private EditText editText;
@@ -76,6 +80,7 @@ public class EditActivity extends Activity implements PicCallBack{
     private LinearLayout editView;
     private ArrayList<Bitmap> bitmaps;
     private ImageView toDeleteImage;
+    private ProgressDialog uploadProgress;
 
     private int count = 0;
     private int pos = 0;
@@ -108,10 +113,28 @@ public class EditActivity extends Activity implements PicCallBack{
         public void handleMessage(Message msg){
             switch (msg.what){
                 case MSG_SET_PIC:{
+                    Log.d("loadPic","6 msg send done");
                     count ++;
                     setImage((Bitmap) msg.obj);
                     if(count == pictures.length)
                         unbindService(picConnection);
+                    break;
+                }
+                case MSG_START_UPDATING:{
+                    uploadProgress = new ProgressDialog(EditActivity.this);
+                    uploadProgress.setMessage("图片上传中");
+                    uploadProgress.setMax(100);
+                    uploadProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    uploadProgress.setIndeterminate(false);
+                    uploadProgress.setProgress(0);
+                    uploadProgress.show();
+                    break;
+                }
+                case MSG_UPDATING:{
+                    uploadProgress.setProgress(msg.arg1);
+                    if(msg.arg1 == 100){
+                        uploadProgress.dismiss();
+                    }
                     break;
                 }
             }
@@ -170,11 +193,17 @@ public class EditActivity extends Activity implements PicCallBack{
     //initial views
     private void initialViews(){
         initialNote();
+        Log.d("ini","1");
         initialEditText();
+        Log.d("ini","2");
         initialAddPicButton();
+        Log.d("ini","3");
         showAddPicButton();
+        Log.d("ini","4");
         initialBackButton();
+        Log.d("ini","5");
         initialImage();
+        Log.d("ini","6");
     }
     
     private void initialImage(){
@@ -219,6 +248,21 @@ public class EditActivity extends Activity implements PicCallBack{
         setPictures(picture);
     }
 
+    @Override
+    public void setUploadProgress(Integer progress){
+        Message msg = new Message();
+        msg.what = MSG_UPDATING;
+        msg.arg1 = progress;
+        handler.sendMessage(msg);
+    }
+
+    @Override
+    public void startUploadProgress(){
+        Message msg = new Message();
+        msg.what = MSG_START_UPDATING;
+        handler.sendMessage(msg);
+    }
+
     private void setImage(Bitmap resource){
         final ImageView addImage = new ImageView(EditActivity.this);
         editView = (LinearLayout)findViewById(R.id.edit_activity_edit_view);
@@ -238,6 +282,7 @@ public class EditActivity extends Activity implements PicCallBack{
         addImage.setOnLongClickListener(deleteClickListener);
         editView.setGravity(Gravity.CENTER_HORIZONTAL);
         editView.addView(addImage);
+        Log.d("loadPic","7 pic set done");
     }
 
     private View.OnLongClickListener deleteClickListener = new View.OnLongClickListener() {

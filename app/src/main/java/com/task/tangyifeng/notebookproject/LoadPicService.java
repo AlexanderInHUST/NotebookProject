@@ -54,11 +54,16 @@ public class LoadPicService extends Service {
             @Override
             public void run() {
                 while (callBack == null) ;
-                if(picture == null)
+                Log.d("loadPic","1");
+                if(picture == null) {
+                    Log.d("loadPic","picture null");
                     return;
+                }
+                Log.d("loadPic","2");
                 iniDone = new ArrayList<Boolean>();
                 pic = new File[picture.length];
                 innerIndex = 0;
+                Log.d("loadPic","3");
                 for(index = 0; index < picture.length; index++) {
                     Log.d("loadPic",""+index);
                     iniDone.add(new Boolean(false));
@@ -68,6 +73,7 @@ public class LoadPicService extends Service {
                         public void done(byte[] bytes, AVException e) {
                             if(e != null)
                                 e.printStackTrace();
+                            Log.d("loadPic","4 got data");
                             File dirs = new File(picName[innerIndex]);
                             if (!dirs.exists())
                                 dirs.mkdirs();
@@ -78,6 +84,7 @@ public class LoadPicService extends Service {
                             } catch (IOException IOe) {
                                 IOe.printStackTrace();
                             }
+                            Log.d("loadPic","5 write done");
                             BitmapFactory factory = new BitmapFactory();
                             callBack.sendSetImage(factory.decodeFile(picName[innerIndex]));
                             innerIndex++;
