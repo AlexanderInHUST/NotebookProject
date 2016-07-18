@@ -2,6 +2,7 @@ package com.task.tangyifeng.notebookproject;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -59,7 +60,10 @@ public class MainActivity extends Activity implements CallBack {
     private static final int CLICKED = 2;
     private static final int MSG_LOADING = 0;
     private static final int MSG_LOADED = 1;
-    private static final int MSG_FLASH = 2;
+    private static final int MSG_LOADING_PROGRESS  = 2;
+    private static final int MSG_UPLOAD = 3;
+    private static final int MSG_UPLOADING_PROGRESS = 4;
+    private static final int MSG_FLASH = 5;
 
     private TextSwitcher mainActivityLabel;
     private TextSwitcher edit;
@@ -73,6 +77,8 @@ public class MainActivity extends Activity implements CallBack {
     private ArrayList<Note> toDeleteNotes;
     private int isLoading = NOT_LOAD;
     private int isEditing = NOT_EDIT;
+    private ProgressDialog loadingProgress;
+    private ProgressDialog uploadingProgress;
 
     private Intent cloudIntent;
     private Intent deleteIntent;
@@ -92,6 +98,13 @@ public class MainActivity extends Activity implements CallBack {
                     isLoading = LOADING;
                     showLabel();
                     showCloudButton();
+                    loadingProgress = new ProgressDialog(MainActivity.this);
+                    loadingProgress.setMessage("加载文档中");
+                    loadingProgress.setProgress(0);
+                    loadingProgress.setMax(100);
+                    loadingProgress.setIndeterminate(false);
+                    loadingProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingProgress.show();
                     Log.d("loading","setting");
                     break;
                 }
@@ -103,6 +116,32 @@ public class MainActivity extends Activity implements CallBack {
                     notesListView.setOnItemClickListener(editNoteListener);
                     showCount();
                     Log.d("loaded","set");
+                    break;
+                }
+                case MSG_LOADING_PROGRESS:{
+                    loadingProgress.setProgress(msg.arg1);
+                    if(msg.arg1 == 100){
+                        loadingProgress.dismiss();
+                        sendLoadedMsg();
+                    }
+                    break;
+                }
+                case MSG_UPLOAD:{
+                    uploadingProgress = new ProgressDialog(MainActivity.this);
+                    uploadingProgress.setMessage("文档上传中");
+                    uploadingProgress.setProgress(0);
+                    uploadingProgress.setMax(100);
+                    uploadingProgress.setIndeterminate(false);
+                    uploadingProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    uploadingProgress.show();
+                    break;
+                }
+                case MSG_UPLOADING_PROGRESS:{
+                    uploadingProgress.setProgress(msg.arg1);
+                    if(msg.arg1 == 100){
+                        uploadingProgress.dismiss();
+                        initialViews();
+                    }
                     break;
                 }
                 case MSG_FLASH:{
@@ -119,20 +158,28 @@ public class MainActivity extends Activity implements CallBack {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initialViews();
-
         if(getIntent().getStringExtra("Edit") != null){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try{
-                        TimeUnit.MILLISECONDS.sleep(2000);
-                        cloudButton.callOnClick();
-                    }catch (InterruptedException e){
-                        e.printStackTrace();
+                    Message msg = new Message();
+                    msg.what = MSG_UPLOAD;
+                    loadHandler.sendMessage(msg);
+                    for(int i = 0; i < 10; i++){
+                        try{
+                            TimeUnit.MILLISECONDS.sleep(100);
+                            Message msg1 = new Message();
+                            msg1.what = MSG_UPLOADING_PROGRESS;
+                            msg1.arg1 = 100 / 10 * (i + 1);
+                            loadHandler.sendMessage(msg1);
+                        }catch (InterruptedException e){
+                            e.printStackTrace();
+                        }
                     }
                 }
             }).start();
+        }else{
+            initialViews();
         }
 
     }
@@ -148,6 +195,14 @@ public class MainActivity extends Activity implements CallBack {
     public void sendLoadingMsg(){
         Message msg = new Message();
         msg.what = MSG_LOADING;
+        loadHandler.sendMessage(msg);
+    }
+
+    @Override
+    public void sendLoadingProgress(int progress){
+        Message msg = new Message();
+        msg.what = MSG_LOADING_PROGRESS;
+        msg.arg1 = progress;
         loadHandler.sendMessage(msg);
     }
 

@@ -54,13 +54,16 @@ public class CloudService extends Service {
                 callBack.sendLoadingMsg();
                 notes = new ArrayList<Note>();
                 getKeys();
+                callBack.sendLoadingProgress(30);
                 for(int i = 0; i < keys.size(); i++){
                     key = keys.get(i);
                     addNote();
+                    callBack.sendLoadingProgress((int)(30 + 70 / keys.size() * i ));
                 }
                 while(notes.size() != keys.size());
                 callBack.setNotes(notes);
                 callBack.unbindCloud();
+                callBack.sendLoadingProgress(100);
                 callBack.sendLoadedMsg();
                 stopSelf();
             }

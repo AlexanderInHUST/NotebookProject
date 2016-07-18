@@ -11,6 +11,7 @@ import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVFile;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.GetDataCallback;
+import com.avos.avoscloud.ProgressCallback;
 import com.avos.avoscloud.okhttp.internal.framed.FramedStream;
 
 import java.io.File;
@@ -64,6 +65,7 @@ public class LoadPicService extends Service {
                 pic = new File[picture.length];
                 innerIndex = 0;
                 Log.d("loadPic","3");
+                callBack.sendStartLoadPic();
                 for(index = 0; index < picture.length; index++) {
                     Log.d("loadPic",""+index);
                     iniDone.add(new Boolean(false));
@@ -71,9 +73,9 @@ public class LoadPicService extends Service {
                     picFile.getDataInBackground(new GetDataCallback() {
                         @Override
                         public void done(byte[] bytes, AVException e) {
-                            if(e != null)
+                            if (e != null)
                                 e.printStackTrace();
-                            Log.d("loadPic","4 got data");
+                            Log.d("loadPic", "4 got data");
                             File dirs = new File(picName[innerIndex]);
                             if (!dirs.exists())
                                 dirs.mkdirs();
@@ -84,14 +86,20 @@ public class LoadPicService extends Service {
                             } catch (IOException IOe) {
                                 IOe.printStackTrace();
                             }
-                            Log.d("loadPic","5 write done");
+                            Log.d("loadPic", "5 write done");
                             BitmapFactory factory = new BitmapFactory();
                             callBack.sendSetImage(factory.decodeFile(picName[innerIndex]));
                             innerIndex++;
                             iniDone.remove(0);
                         }
+                    }, new ProgressCallback() {
+                        @Override
+                        public void done(Integer integer) {
+                            callBack.sendLoadingProgress((integer - 1 == -1) ? 0 : integer -1);
+                        }
                     });
                     while(!iniDone.isEmpty()) ;
+                    callBack.sendLoadingProgress(100);
                 }
             }
         }).start();

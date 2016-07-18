@@ -72,6 +72,8 @@ public class EditActivity extends Activity implements PicCallBack{
     private static final int MSG_SET_PIC = 0;
     private static final int MSG_START_UPDATING = 1;
     private static final int MSG_UPDATING = 2;
+    private static final int MSG_START_LOADING = 3;
+    private static final int MSG_LOADING_PROGRESS =4;
     private static final int ID = 19970416;
 
     private EditText editText;
@@ -81,6 +83,7 @@ public class EditActivity extends Activity implements PicCallBack{
     private ArrayList<Bitmap> bitmaps;
     private ImageView toDeleteImage;
     private ProgressDialog uploadProgress;
+    private ProgressDialog loadingPicProgress;
 
     private int count = 0;
     private int pos = 0;
@@ -134,6 +137,23 @@ public class EditActivity extends Activity implements PicCallBack{
                     uploadProgress.setProgress(msg.arg1);
                     if(msg.arg1 == 100){
                         uploadProgress.dismiss();
+                    }
+                    break;
+                }
+                case MSG_START_LOADING:{
+                    loadingPicProgress = new ProgressDialog(EditActivity.this);
+                    loadingPicProgress.setMessage("图片加载中");
+                    loadingPicProgress.setProgress(0);
+                    loadingPicProgress.setMax(100);
+                    loadingPicProgress.setIndeterminate(false);
+                    loadingPicProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingPicProgress.show();
+                    break;
+                }
+                case MSG_LOADING_PROGRESS:{
+                    loadingPicProgress.setProgress(msg.arg1);
+                    if(msg.arg1 == 100){
+                        loadingPicProgress.dismiss();
                     }
                     break;
                 }
@@ -263,6 +283,21 @@ public class EditActivity extends Activity implements PicCallBack{
         handler.sendMessage(msg);
     }
 
+    @Override
+    public void sendStartLoadPic(){
+        Message msg = new Message();
+        msg.what = MSG_START_LOADING;
+        handler.sendMessage(msg);
+    }
+
+    @Override
+    public void sendLoadingProgress(int progress){
+        Message msg = new Message();
+        msg.what = MSG_LOADING_PROGRESS;
+        msg.arg1 = progress;
+        handler.sendMessage(msg);
+    }
+
     private void setImage(Bitmap resource){
         final ImageView addImage = new ImageView(EditActivity.this);
         editView = (LinearLayout)findViewById(R.id.edit_activity_edit_view);
@@ -270,7 +305,7 @@ public class EditActivity extends Activity implements PicCallBack{
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
-        addImage.setScaleType(ImageView.ScaleType.FIT_XY);
+        addImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
         addImage.setPadding(transDpToPx(20),transDpToPx(15),transDpToPx(20), transDpToPx(15));
         addImage.setImageBitmap(resource);
         addImage.setId(pos + ID);

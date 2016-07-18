@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
  */
 public interface PicCallBack {
 
+    public void sendStartLoadPic();
+    public void sendLoadingProgress(int progress);
     public void sendSetImage(Bitmap bitmap);
     public void setPicture(String picture);
     public void startUploadProgress();
